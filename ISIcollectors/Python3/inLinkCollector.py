@@ -45,6 +45,7 @@ def exportInLinks(pap, session):
     """
     pap is a triple of author name, paper name and WOS number queries the database for all inlinks to that WOS number
     """
+    print("Getting: " + pap[2])
     query = session.inlinks(pap[2])
     fname = pap[0] + "_cite_" + pap[1].replace('|', '-').replace(' ','-').replace('/', '') + outputExt
     if makeSeparateDirs:
@@ -54,10 +55,12 @@ def exportInLinks(pap, session):
             os.chdir(writeDir)
         else:
             os.chdir(writeDir)
+    try:
         query.rip(fname)
+    except Warning as w:
+        raise w
+    if makeSeparateDirs:
         os.chdir('..')
-    else:
-        query.rip(fname)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -71,5 +74,8 @@ if __name__ == '__main__':
     S = isi_scrape.AnonymizedUWISISession()
     S.login(userDat[0], userDat[1])
     for p in papersList:
-        exportInLinks(p, S)
+        try:
+            exportInLinks(p, S)
+        except Warning as w:
+            print(w)
     print("done")
